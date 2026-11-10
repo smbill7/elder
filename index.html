@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>노인간호 의학용어 연습</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1d2330; --muted: #6b7280; --line: #e3e6eb;
+    --accent: #2f5bd3; --accent-ink: #ffffff; --ok: #1f8a4c; --ok-bg: #e6f5ec; --bad: #c43838; --bad-bg: #fbeaea;
+    --chip: #eef2fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151b; --card: #1b2029; --text: #e7eaf0; --muted: #9aa3b2; --line: #2c3340;
+      --accent: #6d8ff0; --accent-ink: #0d1220; --ok: #5fcf8e; --ok-bg: #17301f; --bad: #f07a7a; --bad-bg: #3a1c1c;
+      --chip: #232b3a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif; line-height: 1.5; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.35rem; margin: 0 0 4px; }
+  h2 { font-size: 1.05rem; margin: 0 0 8px; }
+  .sub { color: var(--muted); font-size: .9rem; margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin-bottom: 16px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text);
+    padding: 10px 16px; border-radius: 10px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .45; cursor: default; }
+  .bar { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); width: 0; }
+  .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .85rem; gap: 8px; }
+  .chip { display: inline-block; background: var(--chip); padding: 2px 10px; border-radius: 99px; font-size: .8rem; color: var(--muted); }
+  .prompt { font-size: 1.7rem; font-weight: 700; margin: 10px 0 18px; word-break: keep-all; overflow-wrap: anywhere; }
+  label { display: block; font-size: .85rem; color: var(--muted); margin: 12px 0 4px; }
+  input[type=text] { width: 100%; font: inherit; font-size: 1.1rem; padding: 12px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .fb { margin-top: 6px; padding: 8px 12px; border-radius: 8px; font-size: .95rem; }
+  .fb.ok { background: var(--ok-bg); color: var(--ok); }
+  .fb.bad { background: var(--bad-bg); color: var(--bad); }
+  .answer { margin-top: 16px; padding: 12px; border-radius: 10px; background: var(--chip); font-size: .95rem; }
+  .answer b { color: var(--text); }
+  .hint { color: var(--muted); font-size: .8rem; margin: 10px 0 0; }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hidden { display: none !important; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .stat { background: var(--chip); border-radius: 10px; padding: 10px; text-align: center; }
+  .stat b { display: block; font-size: 1.3rem; }
+  .stat span { font-size: .8rem; color: var(--muted); }
+  .tablewrap { overflow-x: auto; }
+  .small { font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>노인간호 의학용어 연습</h1>
+  <p class="sub">79개 용어 × 5회 = 395문제 · 용어·약어·의미 중 하나를 보고 나머지를 맞히기</p>
+
+  <section id="home">
+    <div class="card">
+      <div class="meta"><span id="homeProgressText"></span><span id="homeRound"></span></div>
+      <div class="bar"><i id="homeBar"></i></div>
+      <div class="stats">
+        <div class="stat"><b id="sAnswered">0</b><span>푼 문제</span></div>
+        <div class="stat"><b id="sAcc">-</b><span>정답률</span></div>
+        <div class="stat"><b id="sWrongTerms">0</b><span>틀린 적 있는 용어</span></div>
+      </div>
+      <div class="row">
+        <button class="primary" id="btnContinue">시작하기</button>
+        <button id="btnReview">오답 복습</button>
+        <button id="btnReport">오답 집계 HTML 저장</button>
+        <button id="btnStats">집계 보기</button>
+        <button id="btnRound1">1차 결과 보기</button>
+        <button id="btnSaveRound1">현재를 1차 결과로 저장</button>
+        <button id="btnReset">처음부터 다시</button>
+      </div>
+      <p class="hint" id="round1Status"></p>
+      <p class="hint">진행 상황과 1차 결과는 이 브라우저에 저장됩니다. 한 라운드(79문제)마다 모든 용어가 한 번씩 나오고, 5라운드 동안 각 용어가 정확히 5번씩 출제됩니다. 1라운드를 마치면 그 시점의 1차 결과가 자동으로 남고, 이어서 풀어도 그 결과는 바뀌지 않습니다.</p>
+    </div>
+    <div class="card hidden" id="statsCard">
+      <h2>많이 틀린 순서</h2>
+      <div class="tablewrap"><table id="statsTable"></table></div>
+    </div>
+    <div class="card hidden" id="round1Card">
+      <h2>이 브라우저에 저장된 1차 결과</h2>
+      <p class="sub" id="round1Meta" style="margin-bottom:8px"></p>
+      <div class="tablewrap"><table id="round1Table"></table></div>
+      <div class="row" style="margin-top:12px">
+        <button id="btnRound1Open">새 탭에서 열기</button>
+        <button id="btnRound1Download">HTML 파일로 저장</button>
+        <button id="btnRound1Clear">1차 결과 지우기</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="quiz" class="hidden">
+    <div class="card">
+      <div class="meta"><span id="qPos"></span><span id="qMode"></span></div>
+      <div class="bar"><i id="qBar"></i></div>
+      <div style="margin-top:14px"><span class="chip" id="qLabel"></span></div>
+      <div class="prompt" id="qPrompt"></div>
+      <form id="qForm" autocomplete="off">
+        <div id="qFields"></div>
+        <div class="answer hidden" id="qAnswer"></div>
+        <div class="row" style="margin-top:16px">
+          <button type="submit" class="primary" id="btnSubmit">확인 (Enter)</button>
+          <button type="button" id="btnSkip">모르겠음</button>
+          <button type="button" id="btnOverride" class="hidden">맞은 걸로 처리</button>
+          <button type="button" id="btnHome">그만하기</button>
+        </div>
+        <p class="hint hidden" id="round1note"></p>
+        <p class="hint">영어는 대소문자·띄어쓰기·하이픈·아포스트로피를, 한글 의미는 띄어쓰기를 무시하고 채점합니다. 슬래시(/)나 쉼표로 나뉜 뜻은 하나만 써도 맞습니다. 표현이 조금 달라서 틀리게 나왔다면 「맞은 걸로 처리」를 누르세요.</p>
+      </form>
+    </div>
+  </section>
+</div>
+
+<script>
+// [번호, 용어, 약어, 의미] — elder/img 표 1~79
+const DATA = [
+[1,"elder abuse","","노인 학대"],
+[2,"arterial blood gas analysis","ABGA","동맥혈가스분석"],
+[3,"Alzheimer's disease","AD","알쯔하이머 병"],
+[4,"antidepressant","","항우울제"],
+[5,"aphasia","","실어증"],
+[6,"apraxia","","실행증"],
+[7,"arthritis","","관절염"],
+[8,"asthma","","천식"],
+[9,"benign prostatic hyperplasia","BPH","양성전립선비대증"],
+[10,"bipolar disorder","","조울증"],
+[11,"body mass index","BMI","체질량지수"],
+[12,"bronchiolitis","","세기관지염"],
+[13,"bronchitis","","기관지염"],
+[14,"cerebrovascular accident","CVA","뇌졸중"],
+[15,"cardiovascular disease","CVD","심혈관계 질환"],
+[16,"cataracts","","백내장"],
+[17,"chest pain","","흉통"],
+[18,"chest x-ray","CXR","흉부 x선"],
+[19,"chronic obstructive pulmonary disease","COPD","만성폐쇄성 폐질환"],
+[20,"cognitive function","","인지기능"],
+[21,"congestive heart failure","CHF","울혈성 심부전"],
+[22,"deep tendon reflex","DTR","심부건반사"],
+[23,"defecation","","배변"],
+[24,"dementia","","치매"],
+[25,"delirium","","섬망"],
+[26,"depression","","우울"],
+[27,"dehydration","","탈수"],
+[28,"diabetes mellitus","DM","당뇨병"],
+[29,"diuretics","","이뇨제"],
+[30,"dysarthria","","구음장애"],
+[31,"dyspnea","","호흡곤란"],
+[32,"falls","","낙상"],
+[33,"fecal impaction","","분변매복"],
+[34,"fecal incontinence","","변실금"],
+[35,"fracture","Fx.","골절"],
+[36,"gastric ulcer","","위궤양"],
+[37,"gastroesophageal reflux disease","GERD","위식도 역류 질환"],
+[38,"geriatric syndrome","","노년증후군"],
+[39,"geriatrics","","노인병학"],
+[40,"gerontology","","노년학"],
+[41,"gerontological nursing","","노인간호학"],
+[42,"gout","","통풍"],
+[43,"hospice (palliative care)","","임종간호(완화의료)"],
+[44,"hyperthyroidism/hypothyroidism","","갑상선기능 항진증/갑상선기능 저하증"],
+[45,"hypoglycemia","","저혈당"],
+[46,"insomnia","","불면증"],
+[47,"intake and output","I/O","섭취량, 배설량"],
+[48,"instrumental activities of daily living","IADLs","도구적 일상생활 동작"],
+[49,"laxatives","","완화제"],
+[50,"level of consciousness","LOC","의식수준"],
+[51,"macular degeneration","","황반 퇴행"],
+[52,"malnutrition","","영양결핍"],
+[53,"medication abuse","","약물 남용"],
+[54,"nasogastric tube","NG tube","비위관튜브"],
+[55,"nocturia","","야뇨증"],
+[56,"nonsteroidal anti-inflammatory drugs","NSAIDs","비스테로이드성 소염제"],
+[57,"paralysis","","마비"],
+[58,"polypharmacy","","다중약물요법"],
+[59,"urinary incontinence","","요실금"],
+[60,"orthopnea","","좌위호흡"],
+[61,"pneumonia","","폐렴"],
+[62,"pressure ulcer","","욕창"],
+[63,"pruritus","","소양증, 가려움증"],
+[64,"pulse oximetry","","맥박산소 측정기"],
+[65,"Rheumatoid arthritis","RA","류마티스성 관절염"],
+[66,"schizophrenia","","조현병"],
+[67,"seizure","","발작"],
+[68,"shortness of breath","SOB","숨가쁨, 숨참"],
+[69,"sputum","","객담"],
+[70,"stroke","","뇌졸중"],
+[71,"suction","","흡인"],
+[72,"tracheostomy","","기관절개술"],
+[73,"transient ischemic attack","TIA","일과성 뇌허혈 발작"],
+[74,"tremor","","진전"],
+[75,"tuberculosis","","결핵"],
+[76,"ulceration","","궤양"],
+[77,"urinary tract infection","UTI","요로감염"],
+[78,"vertigo","","현훈, 현기증"],
+[79,"wandering","","배회"]
+].map(([no, term, abbr, meaning]) => ({ no, term, abbr, meaning }));
+
+const ROUNDS = 5;
+const STORE_KEY = "elder-term-quiz-v1";
+const ROUND1_KEY = "elder-term-quiz-v1-round1";
+const ROUND1_HOLD_KEY = "elder-term-quiz-v1-round1-hold";
+const FIELD_NAME = { t: "용어", a: "약어", m: "의미" };
+
+const normEn = s => s.toLowerCase().replace(/[^a-z0-9&]/g, "");
+const normAbbr = s => s.toUpperCase().replace(/JOINT/g, "").replace(/[^A-Z0-9&]/g, "");
+const normKo = s => s.replace(/[\s·.\-~]/g, "").toLowerCase();
+
+function termAlts(item) {
+  const raw = item.term;
+  const set = new Set();
+  const add = s => { const n = normEn(s); if (n) set.add(n); };
+  add(raw);
+  raw.split(/[,/]/).forEach(add);
+  add(raw.replace(/\([^)]*\)/g, " "));
+  raw.replace(/\(([^)]*)\)/g, (_, inner) => { add(inner); return ""; });
+  return [...set];
+}
+function meaningAlts(item) {
+  const m = item.meaning;
+  const set = new Set([normKo(m.replace(/[(),/]/g, ""))]);
+  m.replace(/\(([^)]*)\)/g, (_, inner) => { set.add(normKo(inner)); return ""; });
+  m.replace(/\([^)]*\)/g, "").split(/[,/]/).forEach(p => p.trim() && set.add(normKo(p)));
+  return [...set].filter(Boolean);
+}
+function checkField(item, field, answer, promptType) {
+  if (!answer.trim()) return false;
+  if (field === "t") {
+    const a = normEn(answer);
+    if (termAlts(item).includes(a)) return true;
+    if (promptType === "m") {
+      const mine = meaningAlts(item);
+      return DATA.some(o => o !== item && termAlts(o).includes(a) && meaningAlts(o).some(x => mine.includes(x)));
+    }
+    return false;
+  }
+  if (field === "a") return normAbbr(answer) === normAbbr(item.abbr);
+  if (field === "m") {
+    const alts = meaningAlts(item);
+    const cleaned = normKo(answer.replace(/[(),/]/g, ""));
+    return alts.includes(cleaned) || answer.split(/[,/]/).some(p => p.trim() && alts.includes(normKo(p)));
+  }
+  return false;
+}
+function askFields(item, type) {
+  const all = item.abbr ? ["t", "a", "m"] : ["t", "m"];
+  return all.filter(f => f !== type);
+}
+function valueOf(item, f) { return f === "t" ? item.term : f === "a" ? item.abbr : item.meaning; }
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
+  return arr;
+}
+function buildQueue() {
+  let abbrIdx = 0, plainIdx = 0;
+  const plan = {};
+  for (const item of DATA) {
+    let types;
+    if (item.abbr) {
+      const base = ["t", "a", "m"];
+      const r = abbrIdx++ % 3;
+      const rot = base.slice(r).concat(base.slice(0, r));
+      types = [rot[0], rot[1], rot[2], rot[0], rot[1]];
+    } else {
+      types = (plainIdx++ % 2 === 0) ? ["t", "m", "t", "m", "t"] : ["m", "t", "m", "t", "m"];
+    }
+    plan[item.no] = shuffle(types);
+  }
+  const queue = [];
+  for (let r = 0; r < ROUNDS; r++) {
+    const order = shuffle(DATA.map(d => d.no));
+    if (queue.length && order[0] === queue[queue.length - 1].no) [order[0], order[1]] = [order[1], order[0]];
+    for (const no of order) queue.push({ no, type: plan[no][r] });
+  }
+  return queue;
+}
+
+function freshState() { return { queue: buildQueue(), pos: 0, stats: {}, startedAt: Date.now() }; }
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    if (s && s.queue && s.queue.length === DATA.length * ROUNDS) return s;
+  } catch (e) {}
+  return freshState();
+}
+function loadRound1() {
+  try {
+    const s = JSON.parse(localStorage.getItem(ROUND1_KEY));
+    if (s && s.stats && s.savedAt) return s;
+  } catch (e) {}
+  return null;
+}
+let state = load();
+let round1 = loadRound1();
+let pendingRound1 = null;
+let review = null;
+let current = null;
+
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {} }
+function round1Note(pos) {
+  const tail = "많이 틀린 순서 (오답 수 → 정답률 낮은 순)";
+  if (pos === DATA.length) return `1차 결과 · 1라운드를 마친 시점 · ${tail}`;
+  if (pos > DATA.length) return `1차 결과 · 1라운드 이후 기록이 포함된 저장 시점 · ${tail}`;
+  return `1차 결과 · 1라운드 도중 저장한 기록 · ${tail}`;
+}
+function round1Held() {
+  try { return localStorage.getItem(ROUND1_HOLD_KEY) === "1"; } catch (e) { return false; }
+}
+function archiveRound1(reason, stats) {
+  const snapStats = JSON.parse(JSON.stringify(stats));
+  const savedAt = Date.now();
+  const note = round1Note(state.pos);
+  const html = buildReport(snapStats, { title: "노인간호 의학용어 1차 결과", note, savedAt });
+  round1 = { savedAt, reason, pos: state.pos, stats: snapStats, html };
+  try { localStorage.setItem(ROUND1_KEY, JSON.stringify(round1)); }
+  catch (e) {
+    delete round1.html;
+    try { localStorage.setItem(ROUND1_KEY, JSON.stringify(round1)); } catch (e2) {}
+  }
+  try { localStorage.removeItem(ROUND1_HOLD_KEY); } catch (e) {}
+}
+function maybeArchiveRound1() {
+  if (review || state.pos !== DATA.length) return false;
+  if (round1 && round1.pos >= DATA.length) return false;
+  if (round1Held()) return false;
+  archiveRound1("auto", pendingRound1 || state.stats);
+  pendingRound1 = null;
+  return true;
+}
+function round1Html() {
+  if (!round1) return "";
+  if (round1.html) return round1.html;
+  return buildReport(round1.stats, { title: "노인간호 의학용어 1차 결과", note: round1Note(round1.pos), savedAt: round1.savedAt });
+}
+
+const byNo = Object.fromEntries(DATA.map(d => [d.no, d]));
+function statOf(no) {
+  return state.stats[no] ||= { attempts: 0, correct: 0, wrong: 0, wrongBy: { t: 0, a: 0, m: 0 }, wrongAnswers: [] };
+}
+
+const $ = id => document.getElementById(id);
+function show(id) { $("home").classList.toggle("hidden", id !== "home"); $("quiz").classList.toggle("hidden", id !== "quiz"); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function attemptCount(stats) { return Object.values(stats).reduce((a, x) => a + x.attempts, 0); }
+function correctCount(stats) { return Object.values(stats).reduce((a, x) => a + x.correct, 0); }
+
+function renderHome() {
+  const justArchived = maybeArchiveRound1();
+  const total = state.queue.length;
+  const done = state.pos;
+  $("homeProgressText").textContent = `${done} / ${total} 문제`;
+  $("homeRound").textContent = done >= total ? "완료!" : `라운드 ${Math.floor(done / DATA.length) + 1} / ${ROUNDS}`;
+  $("homeBar").style.width = (done / total * 100) + "%";
+  const attempts = attemptCount(state.stats);
+  const correct = correctCount(state.stats);
+  $("sAnswered").textContent = attempts;
+  $("sAcc").textContent = attempts ? Math.round(correct / attempts * 100) + "%" : "-";
+  $("sWrongTerms").textContent = Object.values(state.stats).filter(x => x.wrong > 0).length;
+  $("btnContinue").textContent = done === 0 ? "시작하기" : done >= total ? "모두 완료 (다시 하려면 '처음부터')" : "이어하기";
+  $("btnContinue").disabled = done >= total;
+  $("btnReview").disabled = !Object.values(state.stats).some(x => x.wrong > 0);
+  $("btnRound1").disabled = !round1;
+  $("btnSaveRound1").disabled = attempts === 0;
+  if (round1) {
+    const when = new Date(round1.savedAt).toLocaleString("ko-KR");
+    const acc = attemptCount(round1.stats) ? Math.round(correctCount(round1.stats) / attemptCount(round1.stats) * 100) + "%" : "-";
+    $("round1Status").textContent = `1차 결과가 이 브라우저에 저장되어 있습니다. ${when} · ${attemptCount(round1.stats)}문제 · 정답률 ${acc}`;
+  } else if (round1Held() && state.pos === DATA.length) {
+    $("round1Status").textContent = "1차 결과를 지운 상태입니다. 다시 남기려면 「현재를 1차 결과로 저장」을 누르세요.";
+  } else {
+    $("round1Status").textContent = "1라운드(79문제)를 마치면 1차 결과가 이 브라우저에 자동 저장됩니다. 그 전에 남기려면 「현재를 1차 결과로 저장」을 누르세요.";
+  }
+  if (justArchived) $("round1Status").textContent = "1라운드를 마쳐 1차 결과를 이 브라우저에 저장했습니다. " + $("round1Status").textContent;
+  if (!$("statsCard").classList.contains("hidden")) renderStatsTable();
+  if (!$("round1Card").classList.contains("hidden")) renderRound1();
+  show("home");
+}
+
+function rankedStats(stats) {
+  const src = stats || state.stats;
+  return DATA.map(d => ({ d, s: src[d.no] || src[String(d.no)] }))
+    .filter(x => x.s && x.s.attempts > 0)
+    .sort((a, b) => b.s.wrong - a.s.wrong || (a.s.correct / a.s.attempts) - (b.s.correct / b.s.attempts) || a.d.no - b.d.no);
+}
+function typeTxt(w) { return ["t", "a", "m"].filter(f => w[f] > 0).map(f => `${FIELD_NAME[f]} ${w[f]}`).join(", "); }
+function wrongTxt(list) {
+  return (list || []).slice(-3).map(w => Object.entries(w.answers).map(([f, v]) => `${FIELD_NAME[f]}: ${esc(v || "(빈칸)")}`).join(" / ")).join("<br>");
+}
+function reportRows(stats) {
+  return rankedStats(stats).map((x, i) => {
+    const acc = Math.round(x.s.correct / x.s.attempts * 100);
+    return `<tr class="${x.s.wrong >= 3 ? "hot" : x.s.wrong > 0 ? "warm" : ""}">
+      <td class="num">${i + 1}</td><td><b>${esc(x.d.term)}</b></td><td>${esc(x.d.abbr)}</td><td>${esc(x.d.meaning)}</td>
+      <td class="num">${x.s.wrong}</td><td class="num">${x.s.attempts}</td><td class="num">${acc}%</td>
+      <td>${typeTxt(x.s.wrongBy || { t: 0, a: 0, m: 0 })}</td><td class="small">${wrongTxt(x.s.wrongAnswers)}</td></tr>`;
+  }).join("");
+}
+function renderStatsTable() {
+  const rows = rankedStats().filter(x => x.s.wrong > 0);
+  $("statsTable").innerHTML = rows.length
+    ? `<tr><th>#</th><th>용어</th><th>약어</th><th>의미</th><th class="num">오답</th><th class="num">출제</th></tr>` +
+      rows.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.d.term)}</td><td>${esc(x.d.abbr)}</td><td>${esc(x.d.meaning)}</td><td class="num">${x.s.wrong}</td><td class="num">${x.s.attempts}</td></tr>`).join("")
+    : `<tr><td>아직 틀린 문제가 없습니다.</td></tr>`;
+}
+function renderRound1() {
+  if (!round1) { $("round1Card").classList.add("hidden"); return; }
+  const when = new Date(round1.savedAt).toLocaleString("ko-KR");
+  const attempts = attemptCount(round1.stats);
+  const acc = attempts ? Math.round(correctCount(round1.stats) / attempts * 100) : 0;
+  const whenLabel = round1.pos === DATA.length ? "1라운드 완료 시점" : round1.pos > DATA.length ? "1라운드 이후가 포함된 시점" : "1라운드 도중";
+  $("round1Meta").textContent = `${when} 저장 · ${attempts}문제 · 정답률 ${acc}% · ${whenLabel}`;
+  const body = reportRows(round1.stats);
+  $("round1Table").innerHTML = `<thead><tr><th>순위</th><th>용어</th><th>약어</th><th>의미</th><th>오답</th><th>출제</th><th>정답률</th><th>틀린 칸</th><th>최근 오답 입력</th></tr></thead><tbody>${body || `<tr><td colspan="9">기록이 없습니다.</td></tr>`}</tbody>`;
+}
+
+function activeQueue() { return review || state; }
+
+function renderQuestion() {
+  const justArchived = maybeArchiveRound1();
+  const aq = activeQueue();
+  if (aq.pos >= aq.queue.length) {
+    if (review) { alert("오답 복습을 마쳤습니다."); review = null; }
+    else alert("395문제를 모두 풀었습니다. 홈에서 오답 집계를 저장할 수 있습니다.");
+    renderHome(); return;
+  }
+  const q = aq.queue[aq.pos];
+  const item = byNo[q.no];
+  const fields = askFields(item, q.type);
+  current = { q, item, fields, graded: false, record: null };
+
+  $("qPos").textContent = review ? `오답 복습 ${aq.pos + 1} / ${aq.queue.length}`
+    : `${aq.pos + 1} / ${aq.queue.length}  ·  라운드 ${Math.floor(aq.pos / DATA.length) + 1}/${ROUNDS}`;
+  $("qMode").textContent = `${FIELD_NAME[q.type]} → ${fields.map(f => FIELD_NAME[f]).join(" + ")}`;
+  $("qBar").style.width = (aq.pos / aq.queue.length * 100) + "%";
+  $("qLabel").textContent = FIELD_NAME[q.type];
+  $("qPrompt").textContent = valueOf(item, q.type);
+  $("qFields").innerHTML = fields.map(f => `
+    <label for="in_${f}">${FIELD_NAME[f]}${f === "t" ? " (영어)" : f === "m" ? " (한글)" : ""}</label>
+    <input type="text" id="in_${f}" lang="${f === "m" ? "ko" : "en"}" autocapitalize="off" spellcheck="false">
+    <div class="fb hidden" id="fb_${f}"></div>`).join("");
+  $("qAnswer").classList.add("hidden");
+  $("btnSubmit").textContent = "확인 (Enter)";
+  $("btnSkip").classList.remove("hidden");
+  $("btnOverride").classList.add("hidden");
+  if (justArchived) {
+    $("round1note").classList.remove("hidden");
+    $("round1note").textContent = "1라운드를 마쳤습니다. 1차 결과를 이 브라우저에 저장했습니다. 계속 풀어도 그 결과는 바뀌지 않습니다.";
+  } else $("round1note").classList.add("hidden");
+  show("quiz");
+  $("in_" + fields[0]).focus();
+}
+
+function grade() {
+  const { q, item, fields } = current;
+  const results = {};
+  for (const f of fields) {
+    const ans = $("in_" + f).value;
+    results[f] = checkField(item, f, ans, q.type);
+    $("in_" + f).readOnly = true;
+    const fb = $("fb_" + f);
+    fb.classList.remove("hidden");
+    fb.className = "fb " + (results[f] ? "ok" : "bad");
+    fb.textContent = results[f] ? `정답 ✓  ${valueOf(item, f)}` : `오답 ✗  정답: ${valueOf(item, f)}`;
+  }
+  const allOk = fields.every(f => results[f]);
+  const st = statOf(item.no);
+  st.attempts++;
+  const record = { allOk, wrongFields: fields.filter(f => !results[f]), answers: {} };
+  if (allOk) st.correct++;
+  else {
+    st.wrong++;
+    for (const f of record.wrongFields) { st.wrongBy[f]++; record.answers[f] = $("in_" + f).value.trim(); }
+    st.wrongAnswers.push({ shown: q.type, answers: record.answers });
+    if (st.wrongAnswers.length > 10) st.wrongAnswers.shift();
+  }
+  current.graded = true;
+  current.record = record;
+  activeQueue().pos++;
+  if (!review && state.pos === DATA.length) pendingRound1 = JSON.parse(JSON.stringify(state.stats));
+  save();
+
+  $("qAnswer").innerHTML = `<b>${esc(item.term)}</b>${item.abbr ? `  ·  <b>${esc(item.abbr)}</b>` : ""}  ·  ${esc(item.meaning)}`;
+  $("qAnswer").classList.remove("hidden");
+  $("btnSubmit").textContent = "다음 (Enter)";
+  $("btnSkip").classList.add("hidden");
+  $("btnOverride").classList.toggle("hidden", allOk);
+  $("btnSubmit").focus();
+}
+
+function override() {
+  const { item, record } = current;
+  if (!record || record.allOk) return;
+  const st = statOf(item.no);
+  st.wrong--; st.correct++;
+  for (const f of record.wrongFields) st.wrongBy[f]--;
+  st.wrongAnswers.pop();
+  record.allOk = true;
+  if (!review && state.pos === DATA.length) pendingRound1 = JSON.parse(JSON.stringify(state.stats));
+  save();
+  for (const f of current.fields) { const fb = $("fb_" + f); fb.className = "fb ok"; fb.textContent = `정답 처리됨 ✓  ${valueOf(item, f)}`; }
+  $("btnOverride").classList.add("hidden");
+  $("btnSubmit").focus();
+}
+
+function buildReport(stats, opt = {}) {
+  const rows = reportRows(stats);
+  const attempts = attemptCount(stats);
+  const correct = correctCount(stats);
+  const stamp = new Date(opt.savedAt || Date.now()).toLocaleString("ko-KR");
+  const untouched = DATA.length - rankedStats(stats).length;
+  const title = opt.title || "노인간호 의학용어 오답 집계";
+  const note = opt.note || "많이 틀린 순서 (오답 수 → 정답률 낮은 순)";
+  const totalQ = state.queue.length;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title><style>
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;margin:0;padding:24px 16px;color:#1d2330;background:#fff}
+.wrap{max-width:1000px;margin:0 auto}h1{font-size:1.4rem;margin:0 0 4px}.sub{color:#6b7280;margin:0 0 16px}
+.sum{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.sum div{background:#eef2fb;border-radius:10px;padding:10px 16px}
+.sum b{font-size:1.2rem;display:block}table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{border-bottom:1px solid #e3e6eb;padding:7px 6px;text-align:left;vertical-align:top}th{background:#f5f6f8;position:sticky;top:0}
+td.num{text-align:right;font-variant-numeric:tabular-nums}tr.hot td{background:#fbeaea}tr.warm td{background:#fff7e6}
+.small{font-size:.8rem;color:#6b7280}.tw{overflow-x:auto}@media print{th{position:static}}
+</style></head><body><div class="wrap">
+<h1>${esc(title)}</h1>
+<p class="sub">${esc(stamp)} 기준 · ${esc(note)}</p>
+<div class="sum"><div><b>${attempts} / ${totalQ}</b>푼 문제</div><div><b>${attempts ? Math.round(correct / attempts * 100) : 0}%</b>전체 정답률</div>
+<div><b>${rankedStats(stats).filter(x => x.s.wrong > 0).length}개</b>틀린 적 있는 용어</div>${untouched ? `<div><b>${untouched}개</b>아직 안 나온 용어</div>` : ""}</div>
+<div class="tw"><table><thead><tr><th>순위</th><th>용어</th><th>약어</th><th>의미</th><th>오답</th><th>출제</th><th>정답률</th><th>틀린 칸</th><th>최근 오답 입력</th></tr></thead>
+<tbody>${rows || `<tr><td colspan="9">기록이 없습니다.</td></tr>`}</tbody></table></div>
+</div></body></html>`;
+}
+
+function downloadHtml(html, prefix) {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  const name = `${prefix}_${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.html`;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function openHtml(html) {
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, "_blank");
+  if (!w) alert("새 탭을 열지 못했습니다. HTML 파일로 저장해 주세요.");
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+$("btnContinue").onclick = () => { review = null; renderQuestion(); };
+$("btnReview").onclick = () => {
+  const q = [];
+  for (const x of rankedStats().filter(x => x.s.wrong > 0)) {
+    const types = x.d.abbr ? ["t", "a", "m"] : ["t", "m"];
+    for (let k = 0; k < Math.min(3, x.s.wrong); k++) q.push({ no: x.d.no, type: types[Math.floor(Math.random() * types.length)] });
+  }
+  review = { queue: shuffle(q), pos: 0 };
+  renderQuestion();
+};
+$("btnReport").onclick = () => downloadHtml(buildReport(state.stats), "노인용어_오답집계");
+$("btnStats").onclick = () => { $("statsCard").classList.toggle("hidden"); renderStatsTable(); };
+$("btnRound1").onclick = () => {
+  if (!round1) return;
+  $("round1Card").classList.toggle("hidden");
+  renderRound1();
+};
+$("btnSaveRound1").onclick = () => {
+  if (!attemptCount(state.stats)) return;
+  if (round1 && !confirm("이 브라우저에 저장된 1차 결과를 지금 기록으로 바꿀까요?")) return;
+  if (!round1 && state.pos < DATA.length && !confirm("1라운드가 끝나기 전입니다. 지금 기록을 1차 결과로 이 브라우저에 저장할까요?\n1라운드를 마치면 완료 시점 기록으로 다시 저장됩니다.")) return;
+  pendingRound1 = null;
+  archiveRound1("manual", state.stats);
+  $("round1Card").classList.remove("hidden");
+  renderHome();
+};
+$("btnRound1Open").onclick = () => { if (round1) openHtml(round1Html()); };
+$("btnRound1Download").onclick = () => { if (round1) downloadHtml(round1Html(), "노인용어_1차결과"); };
+$("btnRound1Clear").onclick = () => {
+  if (!round1 || !confirm("브라우저에 저장된 1차 결과만 지울까요? 풀이 진행은 남습니다.")) return;
+  try { localStorage.removeItem(ROUND1_KEY); } catch (e) {}
+  if (state.pos === DATA.length) { try { localStorage.setItem(ROUND1_HOLD_KEY, "1"); } catch (e) {} }
+  round1 = null;
+  pendingRound1 = null;
+  $("round1Card").classList.add("hidden");
+  renderHome();
+};
+$("btnReset").onclick = () => {
+  if (!confirm("진행 상황과 오답 기록을 모두 지우고 새로 시작할까요?\n브라우저에 저장된 1차 결과는 남습니다. 결과까지 지우려면 1차 결과 화면에서 지우세요.")) return;
+  state = freshState();
+  review = null;
+  pendingRound1 = null;
+  try { localStorage.removeItem(ROUND1_HOLD_KEY); } catch (e) {}
+  save();
+  renderHome();
+};
+$("btnHome").onclick = () => { review = null; renderHome(); };
+$("btnSkip").onclick = () => { if (current && !current.graded) grade(); };
+$("btnOverride").onclick = override;
+$("qForm").onsubmit = e => {
+  e.preventDefault();
+  if (!current) return;
+  if (!current.graded) {
+    const empty = current.fields.find(f => !$("in_" + f).value.trim());
+    const focused = document.activeElement && document.activeElement.id;
+    if (empty && focused !== "in_" + current.fields[current.fields.length - 1] && focused && focused.startsWith("in_")) {
+      const idx = current.fields.indexOf(focused.slice(3));
+      $("in_" + current.fields[idx + 1]).focus(); return;
+    }
+    grade();
+  } else renderQuestion();
+};
+
+renderHome();
+</script>
+</body>
+</html>
